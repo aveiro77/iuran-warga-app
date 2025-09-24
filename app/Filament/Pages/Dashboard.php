@@ -31,15 +31,24 @@ class Dashboard extends Page
         $this->updateStats();
     }
 
+    // Ganti method updateStats() atau tambahkan ini:
     public function updateStats()
     {
         // Hitung statistik berdasarkan periode
         $pemasukanQuery = Pemasukan::whereBetween('tanggal', [$this->startDate, $this->endDate]);
-        $pengeluaranQuery = Pengeluaran::whereBetween('tanggal', [$this->startDate, $this->endDate]);
+        
+        // Untuk pengeluaran, kita join dengan detail
+        $pengeluaranQuery = Pengeluaran::whereBetween('tanggal', [$this->startDate, $this->endDate])
+            ->withSum('details', 'jumlah');
         
         $this->totalWarga = Warga::where('status_aktif', true)->count();
         $this->totalPemasukan = $pemasukanQuery->sum('jumlah');
-        $this->totalPengeluaran = $pengeluaranQuery->sum('jumlah');
+        
+        // Total pengeluaran dari sum details
+        $this->totalPengeluaran = $pengeluaranQuery->get()->sum(function ($pengeluaran) {
+            return $pengeluaran->details_sum_jumlah ?? 0;
+        });
+        
         $this->saldo = $this->totalPemasukan - $this->totalPengeluaran;
     }
 

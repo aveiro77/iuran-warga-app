@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\WargaExport;
 use App\Filament\Resources\WargaResource\Pages;
 use App\Filament\Resources\WargaResource\RelationManagers;
 use App\Models\Warga;
@@ -11,7 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
 
 class WargaResource extends Resource
 {
@@ -67,6 +68,9 @@ class WargaResource extends Resource
                     ->searchable(),
                 Tables\Columns\IconColumn::make('status_aktif')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('pemasukan_count')
+                    ->label('Jml Transaksi')
+                    ->counts('pemasukan'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('aktif')
@@ -82,7 +86,21 @@ class WargaResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('export')
+                        ->label('Export Selected')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function ($records) {
+                            return Excel::download(new WargaExport, 'warga-selected.xlsx');
+                        }),
                 ]),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        return Excel::download(new WargaExport, 'data-warga-' . now()->format('Y-m-d') . '.xlsx');
+                    }),
             ]);
     }
 
