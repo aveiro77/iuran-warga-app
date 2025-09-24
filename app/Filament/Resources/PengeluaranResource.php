@@ -113,11 +113,6 @@ class PengeluaranResource extends Resource
                     ->getStateUsing(fn ($record) => $record->total),
                 Tables\Columns\TextColumn::make('penanggung_jawab')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('bukti_transaksi')
-                    ->label('Bukti')
-                    ->circular()
-                    ->defaultImageUrl(url('/images/default-receipt.png'))
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('details_count')
                     ->label('Jumlah Item')
                     ->counts('details')

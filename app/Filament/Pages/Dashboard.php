@@ -21,6 +21,8 @@ class Dashboard extends Page
     public $totalPemasukan;
     public $totalPengeluaran;
     public $saldo;
+    public $recentPemasukans;
+    public $recentPengeluarans; // Tambahkan ini
 
     public function mount()
     {
@@ -29,15 +31,14 @@ class Dashboard extends Page
         $this->endDate = request()->input('end_date', now()->format('Y-m-d'));
         
         $this->updateStats();
+        $this->loadRecentPemasukans();
+        $this->loadRecentPengeluarans(); // Tambahkan ini
     }
 
-    // Ganti method updateStats() atau tambahkan ini:
     public function updateStats()
     {
         // Hitung statistik berdasarkan periode
         $pemasukanQuery = Pemasukan::whereBetween('tanggal', [$this->startDate, $this->endDate]);
-        
-        // Untuk pengeluaran, kita join dengan detail
         $pengeluaranQuery = Pengeluaran::whereBetween('tanggal', [$this->startDate, $this->endDate])
             ->withSum('details', 'jumlah');
         
@@ -52,6 +53,28 @@ class Dashboard extends Page
         $this->saldo = $this->totalPemasukan - $this->totalPengeluaran;
     }
 
+    public function loadRecentPemasukans()
+    {
+        $this->recentPemasukans = Pemasukan::with('warga')
+            ->whereBetween('tanggal', [$this->startDate, $this->endDate])
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+    }
+
+    // Tambahkan method untuk pengeluaran
+    public function loadRecentPengeluarans()
+    {
+        $this->recentPengeluarans = Pengeluaran::with(['kelompokPengeluaran', 'details'])
+            ->withCount('details')
+            ->whereBetween('tanggal', [$this->startDate, $this->endDate])
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+    }
+
     public function applyFilter()
     {
         $this->validate([
@@ -60,9 +83,10 @@ class Dashboard extends Page
         ]);
 
         $this->updateStats();
+        $this->loadRecentPemasukans();
+        $this->loadRecentPengeluarans(); // Tambahkan ini
         
         // Update URL dengan parameter filter
-        //$this->dispatchBrowserEvent('update-url', [
         $this->dispatch('update-url', [
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
@@ -74,6 +98,8 @@ class Dashboard extends Page
         $this->startDate = '2023-01-01';
         $this->endDate = now()->format('Y-m-d');
         $this->updateStats();
+        $this->loadRecentPemasukans();
+        $this->loadRecentPengeluarans(); // Tambahkan ini
         
         // Reset URL
         $this->dispatch('reset-url');
@@ -87,21 +113,5 @@ class Dashboard extends Page
     public function getTitle(): string
     {
         return 'Dashboard';
-    }
-
-    // Tambahkan method ini di class Dashboard
-    public function getPengeluaranPerKelompok()
-    {
-        return \App\Models\KelompokPengeluaran::withSum(['pengeluaran' => function ($query) {
-            $query->whereBetween('tanggal', [$this->startDate, $this->endDate]);
-        }], 'jumlah')
-        ->where('status_aktif', true)
-        ->get()
-        ->map(function ($kelompok) {
-            return [
-                'nama' => $kelompok->nama,
-                'total' => $kelompok->pengeluaran_sum_jumlah ?? 0
-            ];
-        });
     }
 }

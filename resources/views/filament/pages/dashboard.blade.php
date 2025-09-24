@@ -5,7 +5,6 @@
             <div class="mb-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Filter Periode</h3>
                 
-                {{-- Modifikasi ini: Gunakan flexbox untuk tata letak yang lebih fleksibel --}}
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="flex-1">
                         <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -31,7 +30,6 @@
                         >
                     </div>
                     
-                    {{-- Tambahkan flex-shrink-0 untuk tombol agar tidak menyusut --}}
                     <div class="flex gap-2 flex-shrink-0">
                         <button
                             wire:click="applyFilter"
@@ -64,7 +62,7 @@
 
             {{-- Statistics Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {{-- ... (kode untuk cards) ... --}}
+                {{-- Total Warga --}}
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-l-4 border-primary-500">
                     <div class="flex items-center">
                         <div class="p-3 bg-primary-100 dark:bg-primary-900 rounded-full mr-4">
@@ -121,44 +119,189 @@
                 </div>
             </div>
 
-            {{-- Info Section --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="p-6 bg-primary-50 dark:bg-primary-950 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-3 text-primary-800 dark:text-primary-200">Fitur yang Tersedia:</h3>
-                    <ul class="space-y-2">
-                        <li class="flex items-center">
-                            <x-heroicon-o-check-circle class="h-5 w-5 text-primary-600 mr-2" />
-                            <span class="text-gray-700 dark:text-gray-300">Master Data Warga</span>
-                        </li>
-                        <li class="flex items-center">
-                            <x-heroicon-o-check-circle class="h-5 w-5 text-primary-600 mr-2" />
-                            <span class="text-gray-700 dark:text-gray-300">Pencatatan Pemasukan Iuran</span>
-                        </li>
-                        <li class="flex items-center">
-                            <x-heroicon-o-check-circle class="h-5 w-5 text-primary-600 mr-2" />
-                            <span class="text-gray-700 dark:text-gray-300">Pencatatan Pengeluaran Kampung</span>
-                        </li>
-                    </ul>
+            {{-- Tabel Pemasukan Terbaru --}}
+            <br>
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        <x-heroicon-o-banknotes class="h-5 w-5 inline mr-2 text-success-600" />
+                        Transaksi Pemasukan Terbaru
+                    </h3>
+                    <a 
+                        href="{{ url('/user/pemasukans') }}" 
+                        class="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center"
+                    >
+                        Lihat Semua
+                        <x-heroicon-o-arrow-right class="h-4 w-4 ml-1" />
+                    </a>
                 </div>
                 
-                <div class="p-6 bg-success-50 dark:bg-success-950 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-3 text-success-800 dark:text-success-200">Panduan Cepat:</h3>
-                    <ul class="space-y-2">
-                        <li class="flex items-start">
-                            <span class="bg-success-100 text-success-800 rounded-full px-2 py-1 text-xs font-medium mr-2">1</span>
-                            <span class="text-gray-700 dark:text-gray-300">Input data warga terlebih dahulu</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-success-100 text-success-800 rounded-full px-2 py-1 text-xs font-medium mr-2">2</span>
-                            <span class="text-gray-700 dark:text-gray-300">Kemudian input pemasukan iuran</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="bg-success-100 text-success-800 rounded-full px-2 py-1 text-xs font-medium mr-2">3</span>
-                            <span class="text-gray-700 dark:text-gray-300">Terakhir input pengeluaran jika ada</span>
-                        </li>
-                    </ul>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        No. Transaksi
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Tanggal
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Warga
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Jumlah
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Penarik
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                @forelse($recentPemasukans as $pemasukan)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <span class="font-mono text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                                                {{ $pemasukan->nomor_transaksi }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            {{ $pemasukan->tanggal->format('d/m/Y') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <div class="font-medium">{{ $pemasukan->warga->nama }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                RT {{ $pemasukan->warga->rt }}/RW {{ $pemasukan->warga->rw }}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-medium text-success-600 dark:text-success-400">
+                                            Rp {{ number_format($pemasukan->jumlah, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            {{ $pemasukan->penarik }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                            <x-heroicon-o-document-magnifying-glass class="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                                            <p>Tidak ada data pemasukan untuk periode ini</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {{-- Hapus bagian hasMorePages() dan ganti dengan kondisi sederhana --}}
+                    @if($recentPemasukans->count() >= 10)
+                        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-right">
+                            <a 
+                                href="{{ url('/user/pemasukans') }}" 
+                                class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                            >
+                                Lihat lebih banyak...
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
+
+            {{-- Tabel Pengeluaran Terbaru --}}
+            <br>
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        <x-heroicon-o-credit-card class="h-5 w-5 inline mr-2 text-danger-600" />
+                        Transaksi Pengeluaran Terbaru
+                    </h3>
+                    <a href="{{ url('/user/pengeluarans') }}" class="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center"                    >
+                        Lihat Semua
+                        <x-heroicon-o-arrow-right class="h-4 w-4 ml-1" />
+                    </a>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        No. Transaksi
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Tanggal
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Kelompok
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Total
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Penanggung Jawab
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Jumlah Item
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                                @forelse($recentPengeluarans as $pengeluaran)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <span class="font-mono text-xs bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                                                {{ $pengeluaran->nomor_transaksi }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            {{ $pengeluaran->tanggal->format('d/m/Y') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <div class="font-medium">{{ $pengeluaran->kelompokPengeluaran->nama }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                {{ Str::limit($pengeluaran->keterangan, 30) }}
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-medium text-danger-600 dark:text-danger-400">
+                                            Rp {{ number_format($pengeluaran->total, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            {{ $pengeluaran->penanggung_jawab }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                {{ $pengeluaran->details_count }} item
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                            <x-heroicon-o-document-magnifying-glass class="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                                            <p>Tidak ada data pengeluaran untuk periode ini</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    @if($recentPengeluarans->count() >= 10)
+                        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-right">
+                            <a 
+                                href="{{ url('/admin/pengeluarans') }}" 
+                                class="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                            >
+                                Lihat lebih banyak...
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            
         </div>
     </x-filament::section>
 
